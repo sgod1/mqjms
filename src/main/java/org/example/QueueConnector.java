@@ -10,21 +10,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Optional.*;
+
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class QueueConnector {
 
+    private final Optional<String> qmgr = ofNullable(System.getenv("MQ_QMGR"));
+    private final Optional<String> qmhost = ofNullable(System.getenv("MQ_QMGR_HOST"));
+    private final Optional<String> qmport = ofNullable(System.getenv("MQ_QMGR_PORT"));
+    private final Optional<String> srvchannel = ofNullable(System.getenv("MQ_SRV_CHANNEL"));
+    private final Optional<String> mqappname = ofNullable(System.getenv("MQ_APP_NAME"));
+    private final Optional<String> userid = ofNullable(System.getenv("MQ_USER_ID"));
+    private final Optional<String> password = ofNullable(System.getenv("MQ_USER_PASSWORD"));
+    private final Optional<String> queue1 = ofNullable(System.getenv("MQ_QUEUE_1"));
+
     private final MQQueueConnectionFactory cf = new MQQueueConnectionFactory();
-
-    final Optional<String> qmgr = Optional.ofNullable(System.getenv("MQ_QMGR"));
-    final Optional<String> qmhost = Optional.ofNullable(System.getenv("MQ_QMGR_HOST"));
-    final Optional<String> qmport = Optional.ofNullable(System.getenv("MQ_QMGR_PORT"));
-    final Optional<String> srvchannel = Optional.ofNullable(System.getenv("MQ_SRV_CHANNEL"));
-    final Optional<String> mqappname = Optional.ofNullable(System.getenv("MQ_APP_NAME"));
-
-    final Optional<String> userid = Optional.ofNullable(System.getenv("MQ_USER_ID"));
-    final Optional<String> password = Optional.ofNullable(System.getenv("MQ_USER_PASSWORD"));
-
-    final Optional<String> queue1 = Optional.ofNullable(System.getenv("MQ_QUEUE_1"));
-
+    
     public QueueConnector() throws JMSException {
         this.configureQueueConnectionFactory();
     }
