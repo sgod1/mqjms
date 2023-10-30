@@ -25,7 +25,7 @@ public class QueueConnector {
     private final Optional<String> queue1 = ofNullable(System.getenv("MQ_QUEUE_1"));
 
     private final MQQueueConnectionFactory cf = new MQQueueConnectionFactory();
-    
+
     public QueueConnector() throws JMSException {
         this.configureQueueConnectionFactory();
     }
