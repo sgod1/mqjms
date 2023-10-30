@@ -24,16 +24,20 @@ public class MessageWorker {
     };
 
     @Contract(pure = true)
-    public static @NotNull Runnable receieveOneMessage(QueueConnector qc, Connection c, Queue queue, Optional<Predicate<Message>> work) {
+    public static @NotNull Runnable receieveOneMessage(QueueConnector qc, Connection c, Queue queue) {
+        return receieveOneMessage(qc, c, queue, defaultWork);
+    }
+
+    @Contract(pure = true)
+    public static @NotNull Runnable receieveOneMessage(QueueConnector qc, Connection c, Queue queue, Predicate<Message> work) {
 
         return () -> {
             try (Session s = qc.createTransactedSession(c);) {
                 Optional<Message> m = qc.receiveOneMessageNoCommit(s, queue);
 
                 if (m.isPresent()) {
-                    Predicate<Message> todo = work.orElse(defaultWork);
 
-                    if (todo.test(m.get())) {
+                    if (work.test(m.get())) {
                         System.out.println("work committed...");
                         s.commit();
                     }

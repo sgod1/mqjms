@@ -32,8 +32,8 @@ public class App
         Predicate<Message> slowwork = getSlowwork(5 * 1000);
         Predicate<Message> fastwork = getFastwork();
 
-        Runnable slowrun = MessageWorker.receieveOneMessage(qc, c, q1, Optional.of(slowwork));
-        Runnable fastrun = MessageWorker.receieveOneMessage(qc, c, q1, Optional.of(fastwork));
+        Runnable slowrun = MessageWorker.receieveOneMessage(qc, c, q1, slowwork);
+        Runnable fastrun = MessageWorker.receieveOneMessage(qc, c, q1, fastwork);
 
         Thread t1  = Thread.ofVirtual().start(slowrun);
         Thread t2  = Thread.ofVirtual().start(slowrun);
