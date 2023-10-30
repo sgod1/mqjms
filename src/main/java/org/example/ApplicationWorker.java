@@ -46,10 +46,7 @@ public class ApplicationWorker {
                 System.out.println("slow work done... " + mstring);
                 return true;
 
-            } catch (JMSException e) {
-                throw new RuntimeException(e);
-
-            } catch (InterruptedException e) {
+            } catch (JMSException | InterruptedException e) {
                 throw new RuntimeException(e);
 
             } catch (NoSuchElementException e) {
