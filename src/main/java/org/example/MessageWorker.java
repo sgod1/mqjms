@@ -63,7 +63,7 @@ public class MessageWorker {
                 List<Message> messages = qc.receiveAllMessages(s, queue, commitCount);
                 messages.forEach(work::test);
 
-                System.out.println("\t\treceived " + messages.size() + " messages");
+//                System.out.println("\t\treceived " + messages.size() + " messages");
 
             } catch (JMSException e) {
                 throw new RuntimeException(e);
