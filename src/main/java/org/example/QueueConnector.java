@@ -5,6 +5,7 @@ package org.example;
 //import com.ibm.msg.client.jakarta.wmq.WMQConstants;
 //import jakarta.jms.*;
 
+import com.ibm.mq.jms.MQConnectionFactory;
 import com.ibm.mq.jms.MQQueue;
 import com.ibm.mq.jms.MQQueueConnectionFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
@@ -18,7 +19,7 @@ import java.util.Optional;
 public class QueueConnector {
 
     private final ApplicationConfiguration cfg;
-    private final MQQueueConnectionFactory cf = new MQQueueConnectionFactory();
+    private final MQConnectionFactory cf = new MQConnectionFactory();
 
     public QueueConnector(ApplicationConfiguration cfg) throws JMSException {
         this.cfg = cfg;
