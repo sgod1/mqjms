@@ -1,11 +1,16 @@
 package org.example;
 
-import com.ibm.mq.jakarta.jms.MQQueue;
-import com.ibm.mq.jakarta.jms.MQQueueConnectionFactory;
-import com.ibm.msg.client.jakarta.wmq.WMQConstants;
-import jakarta.jms.*;
+//import com.ibm.mq.jakarta.jms.MQQueue;
+//import com.ibm.mq.jakarta.jms.MQQueueConnectionFactory;
+//import com.ibm.msg.client.jakarta.wmq.WMQConstants;
+//import jakarta.jms.*;
+
+import com.ibm.mq.jms.MQQueue;
+import com.ibm.mq.jms.MQQueueConnectionFactory;
+import com.ibm.msg.client.wmq.WMQConstants;
 import org.jetbrains.annotations.NotNull;
 
+import javax.jms.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

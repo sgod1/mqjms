@@ -18,9 +18,16 @@
   <dependencies>
     <dependency>
       <groupId>com.ibm.mq</groupId>
+      <artifactId>com.ibm.mq.allclient</artifactId>
+      <version>9.2.2.0</version>
+    </dependency>
+<!--
+    <dependency>
+      <groupId>com.ibm.mq</groupId>
       <artifactId>com.ibm.mq.jakarta.client</artifactId>
       <version>9.3.0.0</version>
     </dependency>
+-->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

@@ -1,9 +1,14 @@
 package org.example;
 
-import jakarta.jms.Connection;
-import jakarta.jms.JMSException;
-import jakarta.jms.Message;
-import jakarta.jms.Queue;
+//import jakarta.jms.Connection;
+//import jakarta.jms.JMSException;
+//import jakarta.jms.Message;
+//import jakarta.jms.Queue;
+
+import javax.jms.Connection;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Queue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,7 +20,7 @@ import static org.example.ApplicationWorker.*;
 
 public class App
 {
-    public static void main(String[] args) throws JMSException, InterruptedException, IOException {
+    public static void main(String[] args) throws JMSException, IOException {
 
         ApplicationConfiguration appcfg = new ApplicationConfiguration();
 

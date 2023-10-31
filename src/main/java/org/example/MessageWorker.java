@@ -1,9 +1,10 @@
 package org.example;
 
-import jakarta.jms.*;
+//import jakarta.jms.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import javax.jms.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;

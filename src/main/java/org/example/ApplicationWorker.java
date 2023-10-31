@@ -1,9 +1,14 @@
 package org.example;
 
-import jakarta.jms.JMSException;
-import jakarta.jms.Message;
-import jakarta.jms.TextMessage;
+//import jakarta.jms.JMSException;
+//import jakarta.jms.Message;
+//import jakarta.jms.TextMessage;
+
 import org.jetbrains.annotations.NotNull;
+
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.TextMessage;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
