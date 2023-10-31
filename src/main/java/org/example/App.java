@@ -25,6 +25,8 @@ public class App
         ApplicationConfiguration appcfg = new ApplicationConfiguration();
 
         final String propertiesFile = "app.properties";
+        System.out.println("Using " + propertiesFile + " configuration file");
+
         appcfg.loadProperties(propertiesFile);
 
         QueueConnector qc = new QueueConnector(appcfg);
