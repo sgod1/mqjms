@@ -2,6 +2,7 @@ package org.example;
 
 import jakarta.jms.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -12,9 +13,14 @@ import static org.example.ApplicationWorker.getSlowwork;
 
 public class App
 {
-    public static void main(String[] args) throws JMSException, InterruptedException {
+    public static void main(String[] args) throws JMSException, InterruptedException, IOException {
 
-        QueueConnector qc = new QueueConnector();
+        ApplicationConfiguration appcfg = new ApplicationConfiguration();
+
+        final String propertiesFile = "app.properties";
+        appcfg.loadProperties(propertiesFile);
+
+        QueueConnector qc = new QueueConnector(appcfg);
         Queue q1 = qc.createQueue1();
         Connection c = qc.startConnection();
 

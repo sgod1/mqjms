@@ -10,38 +10,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.Optional.*;
-
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class QueueConnector {
 
-    private final Optional<String> qmgr = ofNullable(System.getenv("MQ_QMGR"));
-    private final Optional<String> qmhost = ofNullable(System.getenv("MQ_QMGR_HOST"));
-    private final Optional<String> qmport = ofNullable(System.getenv("MQ_QMGR_PORT"));
-    private final Optional<String> srvchannel = ofNullable(System.getenv("MQ_SRV_CHANNEL"));
-    private final Optional<String> mqappname = ofNullable(System.getenv("MQ_APP_NAME"));
-    private final Optional<String> userid = ofNullable(System.getenv("MQ_USER_ID"));
-    private final Optional<String> password = ofNullable(System.getenv("MQ_USER_PASSWORD"));
-    private final Optional<String> queue1 = ofNullable(System.getenv("MQ_QUEUE_1"));
-
+    private final ApplicationConfiguration cfg;
     private final MQQueueConnectionFactory cf = new MQQueueConnectionFactory();
 
-    public QueueConnector() throws JMSException {
+    public QueueConnector(ApplicationConfiguration cfg) throws JMSException {
+        this.cfg = cfg;
         this.configureQueueConnectionFactory();
     }
 
     private void configureQueueConnectionFactory() throws JMSException {
         this.cf.setTransportType(WMQConstants.WMQ_CM_CLIENT);
-        this.cf.setQueueManager(qmgr.orElseThrow(() -> new IllegalArgumentException("qmgr name required")));
-        this.cf.setHostName(qmhost.orElseThrow(() -> new IllegalArgumentException("qmgr host required")));
-        this.cf.setPort(Integer.parseInt(qmport.orElseThrow(() -> new IllegalArgumentException("qmgr port required"))));
-        this.cf.setChannel(srvchannel.orElseThrow(() -> new IllegalArgumentException("server channel required")));
-        this.cf.setAppName(mqappname.orElseThrow(() -> new IllegalArgumentException("app name required")));
+        this.cf.setQueueManager(cfg.getQueueManager().orElseThrow(() -> new IllegalArgumentException("qmgr name required")));
+        this.cf.setHostName(cfg.getQueueManagerHost().orElseThrow(() -> new IllegalArgumentException("qmgr host required")));
+        this.cf.setPort(cfg.getQueueManagerPort().orElseThrow(() -> new IllegalArgumentException("qmgr port required")));
+        this.cf.setChannel(cfg.getServerChannel().orElseThrow(() -> new IllegalArgumentException("server channel required")));
+        this.cf.setAppName(cfg.getMQApplicationName().orElseThrow(() -> new IllegalArgumentException("app name required")));
     }
 
     public Connection startConnection() throws JMSException {
-        String u = userid.orElseThrow(() -> new IllegalArgumentException("mq user id required"));
-        String p = password.orElseThrow(() -> new IllegalArgumentException("mq user password required"));
+        String u = cfg.getMQUserName().orElseThrow(() -> new IllegalArgumentException("mq user id required"));
+        String p = cfg.getMQUserPassword().orElseThrow(() -> new IllegalArgumentException("mq user password required"));
 
         Connection c = this.cf.createConnection(u, p);
         c.start();
@@ -51,8 +41,14 @@ public class QueueConnector {
     }
 
     public Queue createQueue1() throws JMSException {
-        // refactor
-        return new MQQueue("queue://qm1/dev.q1?persistence=1&targetClient=0");
+
+        final String queue = cfg.getQueueName().orElseThrow(() -> new IllegalArgumentException("queue name required"));
+        final String qmgr = cfg.getQueueManager().orElseThrow(() -> new IllegalArgumentException("qmgr name required"));
+
+        // todo: message persistence, message priority
+        final String queueUrl = "queue://" + qmgr + "/" + queue + "?persistence=1&targetClient=0";
+
+        return new MQQueue(queueUrl);
     }
 
     public Session createTransactedSession(@NotNull Connection c) throws JMSException {
