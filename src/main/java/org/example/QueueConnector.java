@@ -51,8 +51,8 @@ public class QueueConnector {
         final String queue = cfg.getQueueName().orElseThrow(() -> new IllegalArgumentException("queue name required"));
         final String qmgr = cfg.getQueueManager().orElseThrow(() -> new IllegalArgumentException("qmgr name required"));
 
-        // todo: message persistence, message priority
-        final String queueUrl = "queue://" + qmgr + "/" + queue + "?persistence=1&targetClient=0";
+        // todo: message persistence param, message priority param
+        final String queueUrl = "queue://" + qmgr + "/" + queue + "?persistence=2&targetClient=0";
 
         return new MQQueue(queueUrl);
     }
