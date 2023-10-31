@@ -22,6 +22,9 @@ public class ApplicationConfiguration {
     public static final String RECEIVE_THREADS = "RECEIVE_THREADS"; // number of receive threads
     public static final String SEND_RATE_MPS = "SEND_RATE_MPS"; // send rate messages per second
 
+    public static final String SEND_COMMIT_COUNT = "SEND_COMMIT_COUNT"; // send commit message count
+    public static final String RECEIVE_COMMIT_COUNT = "RECEIVE_COMMIT_COUNT"; // send commit message count
+
     private final Properties properties;
 
     public ApplicationConfiguration() {
@@ -104,5 +107,13 @@ public class ApplicationConfiguration {
 
     public Optional<Integer> getSendRateMps() {
         return getIntegerProperty(SEND_RATE_MPS);
+    }
+
+    public Optional<Integer> getSendCommitCount() {
+        return getIntegerProperty(SEND_COMMIT_COUNT);
+    }
+
+    public Optional<Integer> getReceiveCommitCount() {
+        return getIntegerProperty(RECEIVE_COMMIT_COUNT);
     }
 }

@@ -67,23 +67,34 @@ public class QueueConnector {
         return textMessages.stream().map((tm) -> createTextMessage(s, tm)).toList();
     }
 
-    public void sendTextMessages(Connection c, Queue queue, List<String> textMessages) {
+    public void sendTextMessages(Connection c, Queue queue, List<String> textMessages, int commitCount) {
 
         try (Session s  = this.createTransactedSession(c);) {
 
-            this.sendMessages(s, queue, this.convertMessages(s, textMessages));
+            this.sendMessages(s, queue, this.convertMessages(s, textMessages), commitCount);
 
         } catch (JMSException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void sendMessages(@NotNull Session s, Queue queue, @NotNull List<Message> messages) throws JMSException {
+    public void sendMessages(@NotNull Session s, Queue queue, @NotNull List<Message> messages, int commitCount) throws JMSException {
         MessageProducer mp = s.createProducer(queue);
+
+        int mcount = 0;
         for (Message m : messages) {
             mp.send(m);
+
+            mcount++;
+            if (commitCount > 0 && mcount >= commitCount) {
+                s.commit();
+                mcount = 0;
+            }
         }
-        s.commit();
+
+        if (mcount > 0) {
+            s.commit();
+        }
 
         System.out.println("sent " + messages.size() + " messages");
         System.out.println("session committed...");
@@ -117,9 +128,9 @@ public class QueueConnector {
         return Optional.empty();
     }
 
-    public List<Message> receiveAllMessages(Connection c, Queue queue) {
+    public List<Message> receiveAllMessages(Connection c, Queue queue, int commitCount) {
         try (Session s = createTransactedSession(c);) {
-            return receiveAllMessages(s, queue);
+            return receiveAllMessages(s, queue, commitCount);
 
         } catch (JMSException e) {
             throw new RuntimeException(e);
@@ -143,6 +154,7 @@ public class QueueConnector {
 
             if (commitCount > 0 && mcount >= commitCount) {
                 s.commit();
+                System.out.println("receive... committed " + mcount + " messages");
                 mcount = 0;
             }
 
@@ -152,6 +164,13 @@ public class QueueConnector {
         if (!messages.isEmpty()) {
             if (commitCount == 0 || mcount > 0) {
                 s.commit();
+            }
+
+            if (commitCount == 0) {
+                System.out.println("receive... committed " + messages.size() + " messages");
+
+            } else if (mcount > 0) {
+                System.out.println("receive... committed " + mcount + " messages");
             }
         }
 

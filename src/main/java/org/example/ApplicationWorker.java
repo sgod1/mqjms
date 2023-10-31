@@ -21,7 +21,7 @@ public class ApplicationWorker {
         return (m) -> {
             try {
                 String mstring = getTextMessage(m).orElseThrow().getText();
-                System.out.println("fast work... " + mstring);
+//                System.out.println("fast work... " + mstring.length());
                 return true;
 
             } catch (JMSException e) {
@@ -53,5 +53,40 @@ public class ApplicationWorker {
                 return false;
             }
         };
+    }
+
+    public static @NotNull String createTextMessage(int msgSizeBytes) {
+        if (msgSizeBytes <= 0 || msgSizeBytes > 100 * 1024) {
+            throw new IllegalArgumentException("message size out of bounds");
+        }
+
+        StringBuilder sb = new StringBuilder(msgSizeBytes);
+
+        for (int i = 0; i < msgSizeBytes; i++) {
+            sb.append('a');
+        }
+
+        final String buf = sb.toString();
+        if (buf.length() != msgSizeBytes) {
+            throw new IllegalStateException("failed to create string buffer of " + msgSizeBytes + " bytes");
+        }
+
+        return buf;
+    }
+
+    public static void displaySendProcessingTime(long elapsedTimeMs, @NotNull ApplicationConfiguration cfg) {
+        System.out.println("\tTotal send processing time " + elapsedTimeMs + " ms");
+        System.out.println("\tmessage size: " + cfg.getMessageSize().get() + " bytes");
+        System.out.println("\tbatch size: " + cfg.getBatchSizeMessages().get() + " messages");
+        System.out.println("\tsend threads: " + cfg.getSendThreads().get());
+        System.out.println("\tsend commit count: " + cfg.getSendCommitCount().get());
+    }
+
+    public static void displayReceiveProcessingTime(long elapsedTimeMs, @NotNull ApplicationConfiguration cfg) {
+        System.out.println("\tTotal receive processing time " + elapsedTimeMs + " ms");
+        System.out.println("\tmessage size: " + cfg.getMessageSize().get() + " bytes");
+        System.out.println("\tbatch size: " + cfg.getBatchSizeMessages().get() + " messages");
+        System.out.println("\treceive threads: " + cfg.getReceiveThreads().get());
+        System.out.println("\treceive commit count: " + cfg.getReceiveCommitCount().get());
     }
 }

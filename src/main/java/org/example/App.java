@@ -1,6 +1,9 @@
 package org.example;
 
-import jakarta.jms.*;
+import jakarta.jms.Connection;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.Queue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,8 +11,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.function.Predicate;
 
-import static org.example.ApplicationWorker.getFastwork;
-import static org.example.ApplicationWorker.getSlowwork;
+import static org.example.ApplicationWorker.*;
 
 public class App
 {
@@ -25,57 +27,67 @@ public class App
         Connection c = qc.startConnection();
 
         // send message batch
+        int msgSizeBytes = appcfg.getMessageSize().orElseThrow(() -> new IllegalArgumentException("message size required"));
+        int batchSizeMessages = appcfg.getBatchSizeMessages().orElseThrow(() -> new IllegalArgumentException("message size required"));
+
+        int sendTrheads = appcfg.getSendThreads().orElseThrow(() -> new IllegalArgumentException("send threads required"));
+        int receiveThreads = appcfg.getReceiveThreads().orElseThrow(() -> new IllegalArgumentException("receive threads required"));
+
+        int sendCommitCount = appcfg.getSendCommitCount().orElseThrow(() -> new IllegalArgumentException("send commit count required"));
+        int receiveCommitCount = appcfg.getReceiveCommitCount().orElseThrow(() -> new IllegalArgumentException("receive commut count required"));
+
+        // send messages
+        String msg = ApplicationWorker.createTextMessage(msgSizeBytes);
+
         List<String> textMessages = new ArrayList<>();
 
-        for (int mc = 0; mc < 10; mc++) {
-            textMessages.add("hello world " + new Date().getTime() + "-" + mc);
+        for (int mc = 0; mc < batchSizeMessages; mc++) {
+            textMessages.add(msg);
         }
 
-        qc.sendTextMessages(c, q1, textMessages);
+        int sendMessagesPerThread = batchSizeMessages / sendTrheads;
+        List<Thread> sendThreadsList = new ArrayList<>();
+
+        long sendStartMs = new Date().getTime();
+
+        int msgIdx = 0;
+        for (int st = 0; st < sendTrheads; st++) {
+            List<String> sendSublist = new ArrayList<>(textMessages.subList(msgIdx, msgIdx + sendMessagesPerThread));
+            sendThreadsList.add(Thread.ofVirtual().start(MessageWorker.sendTextMessages(qc, c, q1, sendSublist, sendCommitCount)));
+            msgIdx = sendMessagesPerThread;
+        }
+
+        sendThreadsList.forEach((t) -> {
+            try {
+                t.join();
+            } catch (InterruptedException ignored) {
+            }
+        });
+
+        long sendEndMs = new Date().getTime();
+        long sendDuration = sendEndMs - sendStartMs;
+        displaySendProcessingTime(sendDuration, appcfg);
 
         // receive messages
-        Predicate<Message> slowwork = getSlowwork(5 * 1000);
         Predicate<Message> fastwork = getFastwork();
 
-        Runnable slowrun = MessageWorker.receieveOneMessage(qc, c, q1, slowwork);
-        Runnable fastrun = MessageWorker.receieveOneMessage(qc, c, q1, fastwork);
+        long receiveStartMs = new Date().getTime();
 
-        Thread t1  = Thread.ofVirtual().start(slowrun);
-        Thread t2  = Thread.ofVirtual().start(slowrun);
-
-        Thread t3  = Thread.ofVirtual().start(fastrun);
-        Thread t4  = Thread.ofVirtual().start(fastrun);
-        Thread t5  = Thread.ofVirtual().start(fastrun);
-        Thread t6  = Thread.ofVirtual().start(fastrun);
-        Thread t7  = Thread.ofVirtual().start(fastrun);
-        Thread t8  = Thread.ofVirtual().start(fastrun);
-        Thread t9  = Thread.ofVirtual().start(fastrun);
-        Thread t10  = Thread.ofVirtual().start(fastrun);
-
-        t1.join();
-        t2.join();
-        t3.join();
-        t4.join();
-        t5.join();
-        t6.join();
-        t7.join();
-        t8.join();
-        t9.join();
-        t10.join();
-
-        // receive all messages
-        List<Message> rmsgs = qc.receiveAllMessages(c, q1);
-        if (!rmsgs.isEmpty()) {
-            System.out.println("received " + rmsgs.size() + " remaining messages...");
-        } else {
-            System.out.println("no more messages..");
+        List<Thread> receiveThreadList = new ArrayList<>();
+        for (int r = 0; r < receiveThreads; r++) {
+            receiveThreadList.add(Thread.ofVirtual().start(MessageWorker.receiveAllMessages(qc, c, q1, receiveCommitCount, fastwork)));
         }
 
-        for (Message rm : rmsgs) {
-            if (rm instanceof TextMessage) {
-                System.out.println("text message... " + ((TextMessage) rm).getText());
+        receiveThreadList.forEach((t) -> {
+            try {
+                t.join();
+            } catch (InterruptedException ignored) {
             }
-        }
+        });
+
+        long receiveEndMs = new Date().getTime();
+        long receiveDuration = receiveEndMs - receiveStartMs;
+        displayReceiveProcessingTime(receiveDuration, appcfg);
 
         // stop and close connection
         c.stop();

@@ -4,6 +4,7 @@ import jakarta.jms.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -49,6 +50,30 @@ public class MessageWorker {
             } catch (JMSException e) {
                 throw new RuntimeException(e);
             }
+        };
+    }
+
+    public static Runnable receiveAllMessages(QueueConnector qc, Connection c, Queue queue, int commitCount, Predicate<Message> work) {
+
+        return () -> {
+            try (Session s = qc.createTransactedSession(c);) {
+
+                // todo: pass work into receiveAllMessages
+                List<Message> messages = qc.receiveAllMessages(s, queue, commitCount);
+                messages.forEach(work::test);
+
+                System.out.println("\t\treceived " + messages.size() + " messages");
+
+            } catch (JMSException e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    @Contract(pure = true)
+    public static @NotNull Runnable sendTextMessages(QueueConnector qc, Connection c, Queue q, List<String> messages, int commitCount) {
+        return () -> {
+            qc.sendTextMessages(c, q, messages, commitCount);
         };
     }
 }
