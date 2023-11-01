@@ -15,6 +15,8 @@ public class ApplicationConfiguration {
     public static final String MQ_USER_NAME = "MQ_USER_NAME";
     public static final String MQ_USER_PASSWORD = "MQ_USER_PASSWORD";
     public static final String MQ_QUEUE_NAME = "MQ_QUEUE_NAME";
+    public static final String MQ_CCDT_URL = "MQ_CCDT_URL";
+    public static final String MQ_SSL_CIPHER_SUITE = "MQ_SSL_CIPHER_SUITE";
 
     public static final String MESSAGE_SIZE_BYTES = "MESSAGE_SIZE_BYTES";    // message size in bytes
     public static final String BATCH_SIZE_MESSAGES = "BATCH_SIZE_MESSAGES";    // number of messages in a batch
@@ -115,5 +117,11 @@ public class ApplicationConfiguration {
 
     public Optional<Integer> getReceiveCommitCount() {
         return getIntegerProperty(RECEIVE_COMMIT_COUNT);
+    }
+
+    public Optional<String> getCCDTUrl() { return getStringProperty(MQ_CCDT_URL);}
+
+    public Optional<String> getSSLCipherSuite() {
+        return getStringProperty(MQ_SSL_CIPHER_SUITE);
     }
 }

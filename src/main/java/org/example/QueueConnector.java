@@ -12,6 +12,8 @@ import com.ibm.msg.client.wmq.WMQConstants;
 import org.jetbrains.annotations.NotNull;
 
 import javax.jms.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,11 +30,27 @@ public class QueueConnector {
 
     private void configureQueueConnectionFactory() throws JMSException {
         this.cf.setTransportType(WMQConstants.WMQ_CM_CLIENT);
-        this.cf.setQueueManager(cfg.getQueueManager().orElseThrow(() -> new IllegalArgumentException("qmgr name required")));
-        this.cf.setHostName(cfg.getQueueManagerHost().orElseThrow(() -> new IllegalArgumentException("qmgr host required")));
-        this.cf.setPort(cfg.getQueueManagerPort().orElseThrow(() -> new IllegalArgumentException("qmgr port required")));
-        this.cf.setChannel(cfg.getServerChannel().orElseThrow(() -> new IllegalArgumentException("server channel required")));
-        this.cf.setAppName(cfg.getMQApplicationName().orElseThrow(() -> new IllegalArgumentException("app name required")));
+
+        if (cfg.getCCDTUrl().isEmpty()) {
+            this.cf.setQueueManager(cfg.getQueueManager().orElseThrow(() -> new IllegalArgumentException("qmgr name required")));
+            this.cf.setHostName(cfg.getQueueManagerHost().orElseThrow(() -> new IllegalArgumentException("qmgr host required")));
+            this.cf.setPort(cfg.getQueueManagerPort().orElseThrow(() -> new IllegalArgumentException("qmgr port required")));
+            this.cf.setChannel(cfg.getServerChannel().orElseThrow(() -> new IllegalArgumentException("server channel required")));
+            this.cf.setAppName(cfg.getMQApplicationName().orElseThrow(() -> new IllegalArgumentException("app name required")));
+
+            if (cfg.getSSLCipherSuite().isPresent()) {
+                cf.setSSLCipherSuite(cfg.getSSLCipherSuite().get());
+                cf.setSSLFipsRequired(false);
+            }
+
+        } else {
+            try {
+                cf.setCCDTURL(new URL(cfg.getCCDTUrl().get()));
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+            this.cf.setQueueManager(cfg.getQueueManager().orElseThrow(() -> new IllegalArgumentException("qmgr name required")));
+        }
     }
 
     public Connection startConnection() throws JMSException {
