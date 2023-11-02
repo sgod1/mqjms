@@ -7,6 +7,7 @@ import java.util.Properties;
 
 public class ApplicationConfiguration {
 
+    // mq
     public static final String MQ_QMGR = "MQ_QMGR";
     public static final String MQ_QMGR_HOST = "MQ_QMGR_HOST";
     public static final String MQ_QMGR_PORT = "MQ_QMGR_PORT";
@@ -18,6 +19,13 @@ public class ApplicationConfiguration {
     public static final String MQ_CCDT_URL = "MQ_CCDT_URL";
     public static final String MQ_SSL_CIPHER_SUITE = "MQ_SSL_CIPHER_SUITE";
 
+    // ssl
+    public static final String javax_net_ssl_keyStore = "JAVAX_NET_SSL_KEY_STORE";
+    public static final String javax_net_ssl_keyStorePassword = "JAVAX_NET_SSL_KEY_STORE_PASSWORD";
+    public static final String javax_net_ssl_trustStore = "JAVAX_NET_SSL_TRUST_STORE";
+    public static final String javax_net_ssl_trustStorePassword = "JAVAX_NET_SSL_TRUST_STORE_PASSWORD";
+
+    // perf
     public static final String MESSAGE_SIZE_BYTES = "MESSAGE_SIZE_BYTES";    // message size in bytes
     public static final String BATCH_SIZE_MESSAGES = "BATCH_SIZE_MESSAGES";    // number of messages in a batch
     public static final String SEND_THREADS = "SEND_THREADS"; // number of send threads
@@ -123,5 +131,21 @@ public class ApplicationConfiguration {
 
     public Optional<String> getSSLCipherSuite() {
         return getStringProperty(MQ_SSL_CIPHER_SUITE);
+    }
+
+    public Optional<String> getTruststore() {
+        return this.getStringProperty(javax_net_ssl_trustStore);
+    }
+
+    public Optional<String> getTruststorePassword() {
+        return this.getStringProperty(javax_net_ssl_trustStorePassword);
+    }
+
+    public Optional<String> getKeystore() {
+        return this.getStringProperty(javax_net_ssl_keyStore);
+    }
+
+    public Optional<String> getKeystorePassword() {
+        return this.getStringProperty(javax_net_ssl_keyStorePassword);
     }
 }

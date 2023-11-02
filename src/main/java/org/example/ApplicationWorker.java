@@ -94,4 +94,20 @@ public class ApplicationWorker {
         System.out.println("\treceive threads: " + cfg.getReceiveThreads().get());
         System.out.println("\treceive commit count: " + cfg.getReceiveCommitCount().get());
     }
+
+    public static void displayConnectTime(long elapsedTimeMs, ApplicationConfiguration cfg) {
+        System.out.println("\tTotal connect time " + elapsedTimeMs + " ms");
+        if (cfg.getSSLCipherSuite().isPresent()) {
+            System.out.println("\tSSLCipherSuite " + cfg.getSSLCipherSuite().get());
+
+            if (cfg.getKeystore().isPresent()) {
+                System.out.println("\tClient authentication enabled");
+            } else {
+                System.out.println("\tNo client authentication");
+            }
+
+        } else {
+            System.out.println("\tNo SSL");
+        }
+    }
 }

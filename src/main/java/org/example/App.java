@@ -29,9 +29,15 @@ public class App
 
         appcfg.loadProperties(propertiesFile);
 
+        long connectStartMs = new Date().getTime();
+
         QueueConnector qc = new QueueConnector(appcfg);
         Queue q1 = qc.createQueue1();
         Connection c = qc.startConnection();
+
+        long connectEndMs = new Date().getTime();
+        long connectDuration = connectEndMs - connectStartMs;
+        displayConnectTime(connectDuration, appcfg);
 
         // send message batch
         int msgSizeBytes = appcfg.getMessageSize().orElseThrow(() -> new IllegalArgumentException("message size required"));
@@ -60,9 +66,14 @@ public class App
         int msgIdx = 0;
         for (int st = 0; st < sendTrheads; st++) {
             List<String> sendSublist = new ArrayList<>(textMessages.subList(msgIdx, msgIdx + sendMessagesPerThread));
-            sendThreadsList.add(Thread.ofVirtual().start(MessageWorker.sendTextMessages(qc, c, q1, sendSublist, sendCommitCount)));
+            // java 21
+//            sendThreadsList.add(Thread.ofVirtual().start(MessageWorker.sendTextMessages(qc, c, q1, sendSublist, sendCommitCount)));
+            sendThreadsList.add(new Thread(MessageWorker.sendTextMessages(qc, c, q1, sendSublist, sendCommitCount)));
             msgIdx = sendMessagesPerThread;
         }
+
+        // java 11
+        sendThreadsList.forEach(Thread::start);
 
         sendThreadsList.forEach((t) -> {
             try {
@@ -82,8 +93,13 @@ public class App
 
         List<Thread> receiveThreadList = new ArrayList<>();
         for (int r = 0; r < receiveThreads; r++) {
-            receiveThreadList.add(Thread.ofVirtual().start(MessageWorker.receiveAllMessages(qc, c, q1, receiveCommitCount, fastwork)));
+            // java 21
+//            receiveThreadList.add(Thread.ofVirtual().start(MessageWorker.receiveAllMessages(qc, c, q1, receiveCommitCount, fastwork)));
+            receiveThreadList.add(new Thread(MessageWorker.receiveAllMessages(qc, c, q1, receiveCommitCount, fastwork)));
         }
+
+        // java 11
+        receiveThreadList.forEach(Thread::start);
 
         receiveThreadList.forEach((t) -> {
             try {
