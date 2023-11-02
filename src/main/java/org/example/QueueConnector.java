@@ -129,16 +129,16 @@ public class QueueConnector {
             mcount++;
             if (commitCount > 0 && mcount >= commitCount) {
                 s.commit();
+                System.out.print(" " + Thread.currentThread().getName() + ": snt " + mcount + " msgs;");
+
                 mcount = 0;
             }
         }
 
         if (mcount > 0) {
             s.commit();
+            System.out.print(" " + Thread.currentThread().getName() + ": snt " + mcount + " msgs;");
         }
-
-        System.out.println("sent " + messages.size() + " messages");
-        System.out.println("session committed...");
     }
 
     public void sendOneMessage(@NotNull Session s, Queue queue, Message message) throws JMSException {
@@ -195,7 +195,7 @@ public class QueueConnector {
 
             if (commitCount > 0 && mcount >= commitCount) {
                 s.commit();
-                System.out.println("receive... committed " + mcount + " messages");
+                System.out.print(" " + Thread.currentThread().getName() + ": rcv " + mcount + " msgs;");
                 mcount = 0;
             }
 
@@ -208,10 +208,10 @@ public class QueueConnector {
             }
 
             if (commitCount == 0) {
-                System.out.println("receive... committed " + messages.size() + " messages");
+                System.out.print(" " + Thread.currentThread().getName() + ": rcv " + messages.size() + " msgs;");
 
             } else if (mcount > 0) {
-                System.out.println("receive... committed " + mcount + " messages");
+                System.out.print(" " + Thread.currentThread().getName() + ": rcv " + mcount + " msgs;");
             }
         }
 

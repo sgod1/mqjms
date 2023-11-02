@@ -80,23 +80,25 @@ public class ApplicationWorker {
     }
 
     public static void displaySendProcessingTime(long elapsedTimeMs, @NotNull ApplicationConfiguration cfg) {
-        System.out.println("\tTotal send processing time " + elapsedTimeMs + " ms");
+        System.out.println("\n\n\tTotal send processing time " + elapsedTimeMs + " ms");
         System.out.println("\tmessage size: " + cfg.getMessageSize().get() + " bytes");
         System.out.println("\tbatch size: " + cfg.getBatchSizeMessages().get() + " messages");
         System.out.println("\tsend threads: " + cfg.getSendThreads().get());
         System.out.println("\tsend commit count: " + cfg.getSendCommitCount().get());
+        System.out.println();
     }
 
     public static void displayReceiveProcessingTime(long elapsedTimeMs, @NotNull ApplicationConfiguration cfg) {
-        System.out.println("\tTotal receive processing time " + elapsedTimeMs + " ms");
+        System.out.println("\n\n\tTotal receive processing time " + elapsedTimeMs + " ms");
         System.out.println("\tmessage size: " + cfg.getMessageSize().get() + " bytes");
         System.out.println("\tbatch size: " + cfg.getBatchSizeMessages().get() + " messages");
         System.out.println("\treceive threads: " + cfg.getReceiveThreads().get());
         System.out.println("\treceive commit count: " + cfg.getReceiveCommitCount().get());
+        System.out.println();
     }
 
     public static void displayConnectTime(long elapsedTimeMs, ApplicationConfiguration cfg) {
-        System.out.println("\tTotal connect time " + elapsedTimeMs + " ms");
+        System.out.println("\n\tTotal connect time " + elapsedTimeMs + " ms");
         if (cfg.getSSLCipherSuite().isPresent()) {
             System.out.println("\tSSLCipherSuite " + cfg.getSSLCipherSuite().get());
 
@@ -109,5 +111,6 @@ public class ApplicationWorker {
         } else {
             System.out.println("\tNo SSL");
         }
+        System.out.println();
     }
 }

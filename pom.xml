@@ -4,7 +4,7 @@
 
   <groupId>org.example</groupId>
   <artifactId>mqjms</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.1-jms20-jdk11</version>
   <packaging>jar</packaging>
 
   <name>mqjms</name>
