@@ -11,10 +11,10 @@ authinfo(SYSTEM.DEFAULT.AUTHINFO.IDPWOS) authtype(IDPWOS) ...<br/>
 
 set authrec objtype(qmgr) principal('mqapp1') authadd(connect, inq)
 
-define channel(DEV.HELLO) chltype(SVRCONN) trptype(TCP)
+define channel(DEV.HELLO) chltype(SVRCONN) trptype(TCP)<br/>
 set chlauth(DEV.HELLO) type(usermap) clntuser('mqapp1') usersrc(map) mcauser('mqapp1') address('*')
 
-define qlocal(DEV.Q1)
+define qlocal(DEV.Q1)<br/>
 set authrec profile(DEV.Q1) objtype(queue) principal('mqapp1') authadd(put,get,inq,browse)
 
 ### MQ server SSL setup
