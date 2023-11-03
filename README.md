@@ -3,8 +3,7 @@
 ### MQ server setup
 
 dis qmgr connauth<br/>
-qmname(QM1)<br/>
-connauth(SYSTEM.DEFAULT.AUTHINFO.IDPWOS)<br/>
+qmname(QM1) connauth(SYSTEM.DEFAULT.AUTHINFO.IDPWOS)<br/>
 
 dis authinfo(SYSTEM.DEFAULT.AUTHINFO.IDPWOS)<br/>
 authinfo(SYSTEM.DEFAULT.AUTHINFO.IDPWOS) authtype(IDPWOS) ...<br/>
