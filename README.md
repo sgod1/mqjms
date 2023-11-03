@@ -27,8 +27,8 @@ dis qmgr sslkeyr<br/>
 sslkeyr(C:\ProgramData\IBM\MQ\qmgrs\qm1\ssl\key)<br/>
 
 #### create keystore
-runmqckm -keydb -create -type cms -db key -pw <password><br/>
-runmqckm -keydb -stashpw -db key.kdb -type cms -pw <password><br/>
+runmqckm -keydb -create -type cms -db key -pw password<br/>
+runmqckm -keydb -stashpw -db key.kdb -type cms -pw password<br/>
 
 #### create queue manager keypair
 runmqckm -cert -create -db key.kdb -stashed -label ibmwebspheremqqm1
