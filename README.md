@@ -2,6 +2,21 @@
 
 ### MQ server setup
 
+dis qmgr connauth
+qmname(QM1)
+connauth(SYSTEM.DEFAULT.AUTHINFO.IDPWOS)
+
+dis authinfo(SYSTEM.DEFAULT.AUTHINFO.IDPWOS)
+authinfo(SYSTEM.DEFAULT.AUTHINFO.IDPWOS) authtype(IDPWOS) ...
+
+set authrec objtype(qmgr) principal('mqapp1') authadd(connect, inq)
+
+define channel(DEV.HELLO) chltype(SVRCONN) trptype(TCP)
+set chlauth(DEV.HELLO) type(usermap) clntuser('mqapp1') usersrc(map) mcauser('mqapp1') address('*')
+
+define qlocal(DEV.Q1)
+set authrec profile(DEV.Q1) objtype(queue) principal('mqapp1') authadd(put,get,inq,browse)
+
 ### MQ server SSL setup
 
 alter channel(DEV.HELLO) chltype(SVRCONN) SSLCIPTH(ANY)
@@ -28,7 +43,7 @@ runmqckm -cert -extract -db key.kdb -stashed -label ibmwebspheremqqm1
 #### add trusted certificate to queue manager key store for client authentication
 runmqckm -cert -add -db key.kdb -stashed -file cert.cer -trust enable
 
-## jdk key store
+### jdk key store
 
 #### generate keypair
 keytool -genkeypair -alias alias -keyalg RSA -validity 365 -keystore keystore
@@ -36,6 +51,6 @@ keytool -genkeypair -alias alias -keyalg RSA -validity 365 -keystore keystore
 #### export certificate from keystore
 keytool -export -alias alias -keystore keystore -rfc -file cert.cer
 
-# import trusted certificate from queue manager
+#### import trusted certificate from queue manager
 keytool -import -alias ibmwebspheremqqm1 -file cert.cer -keystore truststore
 
