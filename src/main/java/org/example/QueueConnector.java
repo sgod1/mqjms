@@ -67,7 +67,7 @@ public class QueueConnector {
         final String u = cfg.getMQUserName().orElse("");
         final String p = cfg.getMQUserPassword().orElse("");
 
-        Connection c = this.cf.createConnection(u, p);
+        Connection c = u.isEmpty() && p.isEmpty() ? this.cf.createConnection() : this.cf.createConnection(u,p);
         c.start();
 
         System.out.println("connected...");
