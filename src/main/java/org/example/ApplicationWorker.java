@@ -6,15 +6,85 @@ package org.example;
 
 import org.jetbrains.annotations.NotNull;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.TextMessage;
+import javax.jms.*;
+import javax.jms.Queue;
 
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.lang.IllegalStateException;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class ApplicationWorker {
+
+    public static long sendMessages(QueueConnector qc, Queue q1, Connection c, @NotNull ApplicationConfiguration appcfg) {
+
+        // send message batch
+        int msgSizeBytes = appcfg.getMessageSize().orElseThrow(() -> new IllegalArgumentException("message size required"));
+        int batchSizeMessages = appcfg.getBatchSizeMessages().orElseThrow(() -> new IllegalArgumentException("message size required"));
+
+        int sendTrheads = appcfg.getSendThreads().orElseThrow(() -> new IllegalArgumentException("send threads required"));
+        int sendCommitCount = appcfg.getSendCommitCount().orElseThrow(() -> new IllegalArgumentException("send commit count required"));
+
+        // send messages
+        String msg = ApplicationWorker.createTextMessage(msgSizeBytes);
+
+        List<String> textMessages = new ArrayList<>();
+
+        for (int mc = 0; mc < batchSizeMessages; mc++) {
+            textMessages.add(msg);
+        }
+
+        int sendMessagesPerThread = batchSizeMessages / sendTrheads;
+        List<Thread> sendThreadsList = new ArrayList<>();
+
+        long sendStartMs = new Date().getTime();
+
+        int msgIdx = 0;
+        for (int st = 0; st < sendTrheads; st++) {
+            List<String> sendSublist = new ArrayList<>(textMessages.subList(msgIdx, msgIdx + sendMessagesPerThread));
+            sendThreadsList.add(new Thread(MessageWorker.sendTextMessages(qc, c, q1, sendSublist, sendCommitCount)));
+            msgIdx = sendMessagesPerThread;
+        }
+
+        sendThreadsList.forEach(Thread::start);
+        sendThreadsList.forEach(ApplicationWorker::joinThread);
+
+        long sendEndMs = new Date().getTime();
+        long sendDuration = sendEndMs - sendStartMs;
+        displaySendProcessingTime(sendDuration, appcfg);
+
+        return sendDuration;
+    }
+
+    public static long receiveMessages(QueueConnector qc, Queue q1, Connection c, @NotNull ApplicationConfiguration appcfg) {
+
+        int receiveThreads = appcfg.getReceiveThreads().orElseThrow(() -> new IllegalArgumentException("receive threads required"));
+        int receiveCommitCount = appcfg.getReceiveCommitCount().orElseThrow(() -> new IllegalArgumentException("receive commut count required"));
+
+        Predicate<Message> fastwork = getFastwork();
+
+        long receiveStartMs = new Date().getTime();
+
+        List<Thread> receiveThreadList = new ArrayList<>();
+        for (int r = 0; r < receiveThreads; r++) {
+            receiveThreadList.add(new Thread(MessageWorker.receiveAllMessages(qc, c, q1, receiveCommitCount, fastwork)));
+        }
+
+        receiveThreadList.forEach(Thread::start);
+        receiveThreadList.forEach(ApplicationWorker::joinThread);
+
+        long receiveEndMs = new Date().getTime();
+        long receiveDuration = receiveEndMs - receiveStartMs;
+        displayReceiveProcessingTime(receiveDuration, appcfg);
+
+        return receiveDuration;
+    }
+
+    private static void joinThread(@NotNull Thread thread) {
+        try {
+            thread.join();
+        } catch (InterruptedException ignored) {
+        }
+    }
 
     public static Optional<TextMessage> getTextMessage(Message message) {
         return message instanceof TextMessage ? Optional.of((TextMessage) message) : Optional.empty();
@@ -97,7 +167,7 @@ public class ApplicationWorker {
         System.out.println();
     }
 
-    public static void displayConnectTime(long elapsedTimeMs, ApplicationConfiguration cfg) {
+    public static void displayConnectTime(long elapsedTimeMs, @NotNull ApplicationConfiguration cfg) {
         System.out.println("\n\tTotal connect time " + elapsedTimeMs + " ms");
         if (cfg.getSSLCipherSuite().isPresent()) {
             System.out.println("\tSSLCipherSuite " + cfg.getSSLCipherSuite().get());

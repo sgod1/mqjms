@@ -5,7 +5,6 @@ package org.example;
 //import com.ibm.msg.client.jakarta.wmq.WMQConstants;
 //import jakarta.jms.*;
 
-//import com.github.marschall.legacycompatibilitysslsocketfactory.LegacyCompatibilitySSLSocketFactory;
 import com.ibm.mq.jms.MQConnectionFactory;
 import com.ibm.mq.jms.MQQueue;
 import com.ibm.msg.client.wmq.WMQConstants;
@@ -67,10 +66,6 @@ public class QueueConnector {
         String u = cfg.getMQUserName().orElseThrow(() -> new IllegalArgumentException("mq user id required"));
         String p = cfg.getMQUserPassword().orElseThrow(() -> new IllegalArgumentException("mq user password required"));
 
-        // java 21
-        // https://github.com/marschall/legacy-compatibility-ssl-socket-factory/tree/master
-//        this.cf.setSSLSocketFactory(new LegacyCompatibilitySSLSocketFactory());
-
         Connection c = this.cf.createConnection(u, p);
         c.start();
 
@@ -129,7 +124,7 @@ public class QueueConnector {
             mcount++;
             if (commitCount > 0 && mcount >= commitCount) {
                 s.commit();
-                System.out.print(" " + Thread.currentThread().getName() + ": snt " + mcount + " msgs;");
+                System.out.print(" sent " + mcount + " msgs;");
 
                 mcount = 0;
             }
@@ -137,7 +132,7 @@ public class QueueConnector {
 
         if (mcount > 0) {
             s.commit();
-            System.out.print(" " + Thread.currentThread().getName() + ": snt " + mcount + " msgs;");
+            System.out.print(" sent " + mcount + " msgs;");
         }
     }
 
@@ -195,7 +190,7 @@ public class QueueConnector {
 
             if (commitCount > 0 && mcount >= commitCount) {
                 s.commit();
-                System.out.print(" " + Thread.currentThread().getName() + ": rcv " + mcount + " msgs;");
+                System.out.print(" rcv " + mcount + " msgs;");
                 mcount = 0;
             }
 
@@ -208,10 +203,10 @@ public class QueueConnector {
             }
 
             if (commitCount == 0) {
-                System.out.print(" " + Thread.currentThread().getName() + ": rcv " + messages.size() + " msgs;");
+                System.out.print(" rcv " + messages.size() + " msgs;");
 
             } else if (mcount > 0) {
-                System.out.print(" " + Thread.currentThread().getName() + ": rcv " + mcount + " msgs;");
+                System.out.print(" rcv " + mcount + " msgs;");
             }
         }
 
