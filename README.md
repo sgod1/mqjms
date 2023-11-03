@@ -8,13 +8,13 @@ qmname(QM1) connauth(SYSTEM.DEFAULT.AUTHINFO.IDPWOS)<br/>
 dis authinfo(SYSTEM.DEFAULT.AUTHINFO.IDPWOS)<br/>
 authinfo(SYSTEM.DEFAULT.AUTHINFO.IDPWOS) authtype(IDPWOS) ...<br/>
 
-set authrec objtype(qmgr) principal('mqapp1') authadd(connect, inq)
+set authrec objtype(qmgr) principal('mqapp1') authadd(connect, inq)<br/>
 
 define channel(DEV.HELLO) chltype(SVRCONN) trptype(TCP)<br/>
-set chlauth(DEV.HELLO) type(usermap) clntuser('mqapp1') usersrc(map) mcauser('mqapp1') address('*')
+set chlauth(DEV.HELLO) type(usermap) clntuser('mqapp1') usersrc(map) mcauser('mqapp1') address('*')<br/>
 
 define qlocal(DEV.Q1)<br/>
-set authrec profile(DEV.Q1) objtype(queue) principal('mqapp1') authadd(put,get,inq,browse)
+set authrec profile(DEV.Q1) objtype(queue) principal('mqapp1') authadd(put,get,inq,browse)<br/>
 
 ### MQ server SSL setup
 
