@@ -63,20 +63,9 @@ public class QueueConnector {
     }
 
     public Connection startConnection() throws JMSException {
-        String u = "";
 
-        if (cfg.getMQUserName().isPresent()) {
-            u = cfg.getMQUserName().get();
-        }
-
-//        String u1 = cfg.getMQUserName().orElseThrow(() -> new IllegalArgumentException("mq user id required"));
-//        String p = cfg.getMQUserPassword().orElseThrow(() -> new IllegalArgumentException("mq user password required"));
-
-        String p = "";
-
-        if (cfg.getMQUserPassword().isPresent()) {
-            p = cfg.getMQUserPassword().get();
-        }
+        final String u = cfg.getMQUserName().orElse("");
+        final String p = cfg.getMQUserPassword().orElse("");
 
         Connection c = this.cf.createConnection(u, p);
         c.start();
