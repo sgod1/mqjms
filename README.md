@@ -2,17 +2,34 @@
 
 ### MQ server setup
 
+#### MQ server without autentication
+dis qmgr connauth
+qmname(QM1) connauth()
+
+For jms client, the value of asserted user is os account name of the client application.<br/>
+For example, if 'simon' is logged on the client machine, the channel mca user is 'simon'.<br/>
+
+Set mcauser on the svrconn channel.<br/>
+Make sure channel mcauser is valid user id on qmgr operating system.<br/>
+Note that we did not define any chlauth records.
+
+define channel(DEV.HELLO) chltype(SVRCONN) trptype(TCP)<br/>
+alter channel(DEV.HELLO) chltype(SVRCONN) mcauser('mqapp1')
+
+#### MQ server with authentication
 dis qmgr connauth<br/>
 qmname(QM1) connauth(SYSTEM.DEFAULT.AUTHINFO.IDPWOS)<br/>
 
 dis authinfo(SYSTEM.DEFAULT.AUTHINFO.IDPWOS)<br/>
 authinfo(SYSTEM.DEFAULT.AUTHINFO.IDPWOS) authtype(IDPWOS) ...<br/>
 
-set authrec objtype(qmgr) principal('mqapp1') authadd(connect, inq)<br/>
-
 define channel(DEV.HELLO) chltype(SVRCONN) trptype(TCP)<br/>
 set chlauth(DEV.HELLO) type(usermap) clntuser('mqapp1') usersrc(map) mcauser('mqapp1') address('*')<br/>
 
+#### connection authorization
+set authrec objtype(qmgr) principal('mqapp1') authadd(connect, inq)<br/>
+
+#### local queue
 define qlocal(DEV.Q1)<br/>
 set authrec profile(DEV.Q1) objtype(queue) principal('mqapp1') authadd(put,get,inq,browse)<br/>
 
