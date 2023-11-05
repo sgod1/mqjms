@@ -84,6 +84,18 @@ public class QueueConnector {
         return c;
     }
 
+    public Optional<Connection> startThreadShareConnection() throws JMSException {
+
+        if (this.getThreadsShareConnection()) {
+            System.out.println("\tOne connection for all threads...\n");
+            return Optional.of(this.startConnection());
+
+        } else {
+            System.out.println("\nOne connection per thread...\n");
+            return Optional.empty();
+        }
+    }
+
     public boolean getThreadsShareConnection() {
         return this.cfg.getThreadsShareConnection().isEmpty() || !this.cfg.getThreadsShareConnection().get().equalsIgnoreCase("no");
     }

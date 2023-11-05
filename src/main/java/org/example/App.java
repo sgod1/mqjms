@@ -9,6 +9,7 @@ import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.example.ApplicationWorker.receiveMessages;
 import static org.example.ApplicationWorker.sendMessages;
@@ -27,24 +28,16 @@ public class App
         QueueConnector qc = new QueueConnector(appcfg);
         Queue q1 = qc.createQueue1();
 
-        Connection c = null;
-        if (qc.getThreadsShareConnection()) {
-            System.out.println("\tOne connection for all threads...\n");
-
-            c = qc.startConnection();
-
-        } else {
-            System.out.println("\nOne connection per thread...\n");
-        }
+        Optional<Connection> c = qc.startThreadShareConnection();
 
         // send messages
-        long sdura = sendMessages(qc, q1, c, appcfg);
+        long sdura = sendMessages(qc, q1, c.orElse(null), appcfg);
 
         // receive messages
-        long rdura = receiveMessages(qc, q1, c, appcfg);
+        long rdura = receiveMessages(qc, q1, c.orElse(null), appcfg);
 
-        if (c != null) {
-            c.close();
+        if (c.isPresent()) {
+            c.get().close();
         }
     }
 }
