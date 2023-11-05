@@ -34,22 +34,33 @@ public class MessageWorker {
     public static @NotNull Runnable receieveOneMessage(QueueConnector qc, Connection c, Queue queue, Predicate<Message> work) {
 
         return () -> {
-            try (Session s = qc.createTransactedSession(c);) {
-                Optional<Message> m = qc.receiveOneMessageNoCommit(s, queue);
+            Connection c1 = null;
+            try {
+                c1 = (c == null) ? qc.startConnection() : c;
 
-                if (m.isPresent()) {
+                try (Session s = qc.createTransactedSession(c1);) {
+                    Optional<Message> m = qc.receiveOneMessageNoCommit(s, queue);
 
-                    if (work.test(m.get())) {
-                        System.out.println("work committed...");
-                        s.commit();
+                    if (m.isPresent()) {
+
+                        if (work.test(m.get())) {
+                            System.out.println("work committed...");
+                            s.commit();
+                        }
+
                     }
-
-                } else {
-                    System.out.println("no messages...");
                 }
 
             } catch (JMSException e) {
                 throw new RuntimeException(e);
+
+            } finally {
+                if (c == null && c1 != null) {
+                    try {
+                        c1.close();
+                    } catch (JMSException ignored) {
+                    }
+                }
             }
         };
     }
@@ -57,16 +68,31 @@ public class MessageWorker {
     public static Runnable receiveAllMessages(QueueConnector qc, Connection c, Queue queue, int commitCount, Predicate<Message> work) {
 
         return () -> {
-            try (Session s = qc.createTransactedSession(c);) {
+            Connection c1 = null;
+            try {
+                c1 = (c == null) ? qc.startConnection() : c;
 
-                // todo: pass work into receiveAllMessages
-                List<Message> messages = qc.receiveAllMessages(s, queue, commitCount);
-                messages.forEach(work::test);
+                try (Session s = qc.createTransactedSession(c1);) {
 
-//                System.out.println("\t\treceived " + messages.size() + " messages");
+                    // todo: pass work into receiveAllMessages
+                    List<Message> messages = qc.receiveAllMessages(s, queue, commitCount);
+                    messages.forEach(work::test);
+
+//                    System.out.println("\t\treceived " + messages.size() + " messages");
+                } catch (JMSException e) {
+                    throw new RuntimeException(e);
+                }
 
             } catch (JMSException e) {
                 throw new RuntimeException(e);
+
+            } finally {
+                if (c == null && c1 != null) {
+                    try {
+                        c1.close();
+                    } catch (JMSException ignored) {
+                    }
+                }
             }
         };
     }
@@ -74,7 +100,27 @@ public class MessageWorker {
     @Contract(pure = true)
     public static @NotNull Runnable sendTextMessages(QueueConnector qc, Connection c, Queue q, List<String> messages, int commitCount) {
         return () -> {
-            qc.sendTextMessages(c, q, messages, commitCount);
+            Connection c1 = null;
+
+            try {
+                c1 = (c == null) ? qc.startConnection() : c;
+
+                try (Session s = qc.createTransactedSession(c1);) {
+                    qc.sendTextMessages(s, q, messages, commitCount);
+                }
+
+            } catch (JMSException e) {
+                throw new RuntimeException(e);
+
+            } finally {
+                if (c == null && c1 != null) {
+                    try {
+                        c1.close();
+                    } catch (JMSException ignored) {
+                    }
+                }
+            }
+
         };
     }
 }

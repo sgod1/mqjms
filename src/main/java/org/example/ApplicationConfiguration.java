@@ -35,6 +35,8 @@ public class ApplicationConfiguration {
     public static final String SEND_COMMIT_COUNT = "SEND_COMMIT_COUNT"; // send commit message count
     public static final String RECEIVE_COMMIT_COUNT = "RECEIVE_COMMIT_COUNT"; // send commit message count
 
+    public static final String THREADS_SHARE_CONNECTION = "THREADS_SHARE_CONNECTION"; // share connection between threads
+
     private final Properties properties;
 
     public ApplicationConfiguration() {
@@ -147,5 +149,9 @@ public class ApplicationConfiguration {
 
     public Optional<String> getKeystorePassword() {
         return this.getStringProperty(javax_net_ssl_keyStorePassword);
+    }
+
+    public Optional<String> getThreadsShareConnection() {
+        return this.getStringProperty(THREADS_SHARE_CONNECTION);
     }
 }

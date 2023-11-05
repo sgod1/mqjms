@@ -9,9 +9,9 @@ import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 import java.io.IOException;
-import java.util.Date;
 
-import static org.example.ApplicationWorker.*;
+import static org.example.ApplicationWorker.receiveMessages;
+import static org.example.ApplicationWorker.sendMessages;
 
 public class App
 {
@@ -24,15 +24,18 @@ public class App
 
         appcfg.loadProperties(propertiesFile);
 
-        long connectStartMs = new Date().getTime();
-
         QueueConnector qc = new QueueConnector(appcfg);
         Queue q1 = qc.createQueue1();
-        Connection c = qc.startConnection();
 
-        long connectEndMs = new Date().getTime();
-        long connectDuration = connectEndMs - connectStartMs;
-        displayConnectTime(connectDuration, appcfg);
+        Connection c = null;
+        if (qc.getThreadsShareConnection()) {
+            System.out.println("\tOne connection for all threads...\n");
+
+            c = qc.startConnection();
+
+        } else {
+            System.out.println("\nOne connection per thread...\n");
+        }
 
         // send messages
         long sdura = sendMessages(qc, q1, c, appcfg);
@@ -40,7 +43,8 @@ public class App
         // receive messages
         long rdura = receiveMessages(qc, q1, c, appcfg);
 
-        c.stop();
-        c.close();
+        if (c != null) {
+            c.close();
+        }
     }
 }

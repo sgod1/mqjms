@@ -14,9 +14,12 @@ import javax.jms.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.example.ApplicationWorker.displayConnectTime;
 
 public class QueueConnector {
 
@@ -67,11 +70,22 @@ public class QueueConnector {
         final String u = cfg.getMQUserName().orElse("");
         final String p = cfg.getMQUserPassword().orElse("");
 
+        long connectStartMs = new Date().getTime();
+
         Connection c = this.cf.createConnection(u,p);
         c.start();
 
-        System.out.println("connected...");
+//        System.out.println("connected...");
+
+//        long connectEndMs = new Date().getTime();
+//        long connectDuration = connectEndMs - connectStartMs;
+//        displayConnectTime(connectDuration, this.cfg);
+
         return c;
+    }
+
+    public boolean getThreadsShareConnection() {
+        return this.cfg.getThreadsShareConnection().isEmpty() || !this.cfg.getThreadsShareConnection().get().equalsIgnoreCase("no");
     }
 
     public Queue createQueue1() throws JMSException {
@@ -98,16 +112,12 @@ public class QueueConnector {
     }
 
     public List<Message> convertMessages(Session s, @NotNull List<String> textMessages) {
-        // java 21
-//        return textMessages.stream().map((tm) -> createTextMessage(s, tm)).toList();
-        // java 11
         return textMessages.stream().map((tm) -> createTextMessage(s, tm)).collect(Collectors.toList());
     }
 
-    public void sendTextMessages(Connection c, Queue queue, List<String> textMessages, int commitCount) {
+    public void sendTextMessages(@NotNull Session s, Queue queue, List<String> textMessages, int commitCount) {
 
-        try (Session s  = this.createTransactedSession(c);) {
-
+        try {
             this.sendMessages(s, queue, this.convertMessages(s, textMessages), commitCount);
 
         } catch (JMSException e) {
@@ -163,15 +173,6 @@ public class QueueConnector {
         }
 
         return Optional.empty();
-    }
-
-    public List<Message> receiveAllMessages(Connection c, Queue queue, int commitCount) {
-        try (Session s = createTransactedSession(c);) {
-            return receiveAllMessages(s, queue, commitCount);
-
-        } catch (JMSException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public List<Message> receiveAllMessages(Session s, Queue queue) throws JMSException {
