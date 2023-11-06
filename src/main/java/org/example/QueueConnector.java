@@ -38,7 +38,7 @@ public class QueueConnector {
             this.cf.setHostName(cfg.getQueueManagerHost().orElseThrow(() -> new IllegalArgumentException("qmgr host required")));
             this.cf.setPort(cfg.getQueueManagerPort().orElseThrow(() -> new IllegalArgumentException("qmgr port required")));
             this.cf.setChannel(cfg.getServerChannel().orElseThrow(() -> new IllegalArgumentException("server channel required")));
-            this.cf.setAppName(cfg.getMQApplicationName().orElseThrow(() -> new IllegalArgumentException("app name required")));
+            if (cfg.getMQApplicationName().isPresent()) this.cf.setAppName(this.cfg.getMQApplicationName().get());
 
             if (cfg.getSSLCipherSuite().isPresent()) {
                 cf.setSSLCipherSuite(cfg.getSSLCipherSuite().get());
