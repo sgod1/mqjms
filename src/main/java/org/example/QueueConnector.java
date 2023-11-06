@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.example.ApplicationWorker.displayConnectTime;
-
 public class QueueConnector {
 
     private final ApplicationConfiguration cfg;
@@ -127,18 +125,20 @@ public class QueueConnector {
         return textMessages.stream().map((tm) -> createTextMessage(s, tm)).collect(Collectors.toList());
     }
 
-    public void sendTextMessages(@NotNull Session s, Queue queue, List<String> textMessages, int commitCount) {
+    public void sendTextMessages(@NotNull Session s, Queue queue, List<String> textMessages, int commitCount, int mps) {
 
         try {
-            this.sendMessages(s, queue, this.convertMessages(s, textMessages), commitCount);
+            this.sendMessages(s, queue, this.convertMessages(s, textMessages), commitCount, mps);
 
         } catch (JMSException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void sendMessages(@NotNull Session s, Queue queue, @NotNull List<Message> messages, int commitCount) throws JMSException {
+    public void sendMessages(@NotNull Session s, Queue queue, @NotNull List<Message> messages, int commitCount, int mps) throws JMSException {
         MessageProducer mp = s.createProducer(queue);
+
+        long delayMs = mps > 0 ? 1000 / mps : 0;
 
         int mcount = 0;
         for (Message m : messages) {
@@ -151,6 +151,14 @@ public class QueueConnector {
 
                 mcount = 0;
             }
+
+            if (delayMs > 0) {
+                try {
+                    Thread.sleep(delayMs);
+                } catch (InterruptedException ignored) {
+                }
+            }
+
         }
 
         if (mcount > 0) {

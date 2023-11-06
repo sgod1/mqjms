@@ -98,7 +98,7 @@ public class MessageWorker {
     }
 
     @Contract(pure = true)
-    public static @NotNull Runnable sendTextMessages(QueueConnector qc, Connection c, Queue q, List<String> messages, int commitCount) {
+    public static @NotNull Runnable sendTextMessages(QueueConnector qc, Connection c, Queue q, List<String> messages, int commitCount, int mps) {
         return () -> {
             Connection c1 = null;
 
@@ -106,7 +106,7 @@ public class MessageWorker {
                 c1 = (c == null) ? qc.startConnection() : c;
 
                 try (Session s = qc.createTransactedSession(c1);) {
-                    qc.sendTextMessages(s, q, messages, commitCount);
+                    qc.sendTextMessages(s, q, messages, commitCount, mps);
                 }
 
             } catch (JMSException e) {

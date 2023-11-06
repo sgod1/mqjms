@@ -24,6 +24,9 @@ public class ApplicationWorker {
         int sendTrheads = appcfg.getSendThreads().orElseThrow(() -> new IllegalArgumentException("send threads required"));
         int sendCommitCount = appcfg.getSendCommitCount().orElseThrow(() -> new IllegalArgumentException("send commit count required"));
 
+        int sendRateMps = appcfg.getSendRateMps().orElse(0);
+        System.out.println("\tSend rate " + sendRateMps + " mps\n");
+
         // send messages
         String msg = ApplicationWorker.createTextMessage(msgSizeBytes);
 
@@ -41,7 +44,7 @@ public class ApplicationWorker {
         int msgIdx = 0;
         for (int st = 0; st < sendTrheads; st++) {
             List<String> sendSublist = new ArrayList<>(textMessages.subList(msgIdx, msgIdx + sendMessagesPerThread));
-            sendThreadsList.add(new Thread(MessageWorker.sendTextMessages(qc, c, q1, sendSublist, sendCommitCount)));
+            sendThreadsList.add(new Thread(MessageWorker.sendTextMessages(qc, c, q1, sendSublist, sendCommitCount, sendRateMps)));
             msgIdx = sendMessagesPerThread;
         }
 
