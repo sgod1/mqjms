@@ -65,7 +65,7 @@ public class MessageWorker {
         };
     }
 
-    public static Runnable receiveAllMessages(QueueConnector qc, Connection c, Queue queue, int commitCount, Predicate<Message> work) {
+    public static Runnable receiveAllMessages(QueueConnector qc, Connection c, Queue queue, int commitCount, Predicate<Message> work, int timeout) {
 
         return () -> {
             Connection c1 = null;
@@ -74,11 +74,9 @@ public class MessageWorker {
 
                 try (Session s = qc.createTransactedSession(c1);) {
 
-                    // todo: pass work into receiveAllMessages
-                    List<Message> messages = qc.receiveAllMessages(s, queue, commitCount);
+                    List<Message> messages = qc.receiveAllMessages(s, queue, commitCount, work, timeout);
                     messages.forEach(work::test);
 
-//                    System.out.println("\t\treceived " + messages.size() + " messages");
                 } catch (JMSException e) {
                     throw new RuntimeException(e);
                 }

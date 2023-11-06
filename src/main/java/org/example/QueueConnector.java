@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class QueueConnector {
@@ -195,20 +196,42 @@ public class QueueConnector {
         return Optional.empty();
     }
 
-    public List<Message> receiveAllMessages(Session s, Queue queue) throws JMSException {
-        return this.receiveAllMessages(s, queue, 0);
+    private Optional<Message> receiveOneMessage(MessageConsumer consumer, int receiveTimeout) throws JMSException {
+        Message m;
+
+        if (receiveTimeout > 0) {
+            long receiveTimeoutMs = receiveTimeout * 1000L;
+            m = consumer.receive(receiveTimeoutMs);
+
+        } else if (receiveTimeout == 0) {
+            m = consumer.receive();
+
+        } else {
+            m = consumer.receiveNoWait();
+        }
+
+        return m == null ? Optional.empty() : Optional.of(m);
     }
 
-    public List<Message> receiveAllMessages(@NotNull Session s, Queue queue, int commitCount) throws JMSException {
+    public List<Message> receiveAllMessages(@NotNull Session s, Queue queue, int commitCount, Predicate<Message> work, int receiveTimeout) throws JMSException {
+
         MessageConsumer consumer = s.createConsumer(queue);
         List<Message> messages = new ArrayList<>();
 
-        Message m = consumer.receiveNoWait();
+        // timeout to receive first message
+        Optional<Message> m = this.receiveOneMessage(consumer, receiveTimeout);
 
         int mcount = 0;
-        while (m != null) {
+        while (m.isPresent()) {
+
+            // do work on a message
+//            if (work.test(m.get())) {
+//                // count message
+//                mcount++;
+//            }
+
             mcount++;
-            messages.add(m);
+            messages.add(m.get());
 
             if (commitCount > 0 && mcount >= commitCount) {
                 s.commit();
@@ -216,7 +239,8 @@ public class QueueConnector {
                 mcount = 0;
             }
 
-            m = consumer.receiveNoWait();
+            // receive no-wait
+            m = this.receiveOneMessage(consumer, -1);
         }
 
         if (!messages.isEmpty()) {

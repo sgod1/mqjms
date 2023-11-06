@@ -25,7 +25,7 @@ public class ApplicationWorker {
         int sendCommitCount = appcfg.getSendCommitCount().orElseThrow(() -> new IllegalArgumentException("send commit count required"));
 
         int sendRateMps = appcfg.getSendRateMps().orElse(0);
-        
+
         // send messages
         String msg = ApplicationWorker.createTextMessage(msgSizeBytes);
 
@@ -57,7 +57,7 @@ public class ApplicationWorker {
         return sendDuration;
     }
 
-    public static long receiveMessages(QueueConnector qc, Queue q1, Connection c, @NotNull ApplicationConfiguration appcfg) {
+    public static long receiveMessages(QueueConnector qc, Queue q1, Connection c, @NotNull ApplicationConfiguration appcfg, int timeout) {
 
         int receiveThreads = appcfg.getReceiveThreads().orElseThrow(() -> new IllegalArgumentException("receive threads required"));
         int receiveCommitCount = appcfg.getReceiveCommitCount().orElseThrow(() -> new IllegalArgumentException("receive commut count required"));
@@ -68,7 +68,7 @@ public class ApplicationWorker {
 
         List<Thread> receiveThreadList = new ArrayList<>();
         for (int r = 0; r < receiveThreads; r++) {
-            receiveThreadList.add(new Thread(MessageWorker.receiveAllMessages(qc, c, q1, receiveCommitCount, fastwork)));
+            receiveThreadList.add(new Thread(MessageWorker.receiveAllMessages(qc, c, q1, receiveCommitCount, fastwork, timeout)));
         }
 
         receiveThreadList.forEach(Thread::start);

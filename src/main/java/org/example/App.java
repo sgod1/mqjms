@@ -9,7 +9,8 @@ import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 import java.io.IOException;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.example.ApplicationWorker.receiveMessages;
 import static org.example.ApplicationWorker.sendMessages;
@@ -17,6 +18,21 @@ import static org.example.ApplicationWorker.sendMessages;
 public class App
 {
     public static void main(String[] args) throws JMSException, IOException {
+
+        boolean recieveOnly = false;
+        boolean sendOnly = false;
+
+        for (String a : args) {
+            if (a.equalsIgnoreCase("rcv") || a.equalsIgnoreCase("receive")) {
+                recieveOnly = true;
+
+            } else if (a.equalsIgnoreCase("snd") || a.equalsIgnoreCase("send")) {
+                sendOnly = true;
+            }
+        }
+
+        boolean send = !recieveOnly || sendOnly;
+        boolean receive = !sendOnly || recieveOnly;
 
         ApplicationConfiguration appcfg = new ApplicationConfiguration();
 
@@ -31,10 +47,15 @@ public class App
         Optional<Connection> c = qc.startThreadShareConnection();
 
         // send messages
-        long sdura = sendMessages(qc, q1, c.orElse(null), appcfg);
+        if (send) {
+            long sdura = sendMessages(qc, q1, c.orElse(null), appcfg);
+        }
 
         // receive messages
-        long rdura = receiveMessages(qc, q1, c.orElse(null), appcfg);
+        if (receive) {
+            int receiveTimeout = -1;
+            long rdura = receiveMessages(qc, q1, c.orElse(null), appcfg, receiveTimeout);
+        }
 
         if (c.isPresent()) {
             c.get().close();
