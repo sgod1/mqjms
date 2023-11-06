@@ -25,8 +25,7 @@ public class ApplicationWorker {
         int sendCommitCount = appcfg.getSendCommitCount().orElseThrow(() -> new IllegalArgumentException("send commit count required"));
 
         int sendRateMps = appcfg.getSendRateMps().orElse(0);
-        System.out.println("\tSend rate " + sendRateMps + " mps\n");
-
+        
         // send messages
         String msg = ApplicationWorker.createTextMessage(msgSizeBytes);
 
@@ -158,6 +157,7 @@ public class ApplicationWorker {
         System.out.println("\tbatch size: " + cfg.getBatchSizeMessages().get() + " messages");
         System.out.println("\tsend threads: " + cfg.getSendThreads().get());
         System.out.println("\tsend commit count: " + cfg.getSendCommitCount().get());
+        System.out.println("\tsend rate: " + cfg.getSendRateMps().orElse(0) + " mps");
         System.out.println();
     }
 
